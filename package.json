@@ -1,0 +1,73 @@
+{
+  "name": "repl-vue2",
+  "version": "0.0.1",
+  "description": "Vue 2.7 REPL component for browser-based Vue 2 development",
+  "type": "module",
+  "main": "dist/repl-vue2.cjs",
+  "module": "dist/repl-vue2.js",
+  "types": "dist/repl-vue2.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/repl-vue2.d.ts",
+      "import": "./dist/repl-vue2.js",
+      "require": "./dist/repl-vue2.cjs"
+    },
+    "./monaco-editor": {
+      "types": "./dist/monaco-editor.d.ts",
+      "import": "./dist/monaco-editor.js"
+    },
+    "./codemirror-editor": {
+      "types": "./dist/codemirror-editor.d.ts",
+      "import": "./dist/codemirror-editor.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js"
+    },
+    "./style.css": "./dist/repl-vue2.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build-preview": "vite build -c vite.preview.config.ts",
+    "preview": "vite preview",
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@vue/compiler-sfc": "^3.5.13",
+    "hash-sum": "^2.0.0"
+  },
+  "devDependencies": {
+    "@babel/standalone": "^7.26.5",
+    "@babel/types": "^7.26.5",
+    "@eslint/js": "^9.17.0",
+    "@rollup/plugin-replace": "^6.0.2",
+    "@types/babel__standalone": "^7.1.9",
+    "@types/codemirror": "^5.60.16",
+    "@types/hash-sum": "^1.0.2",
+    "@types/node": "^22.10.2",
+    "@vitejs/plugin-vue2": "^2.3.3",
+    "@vue/babel-plugin-transform-vue-jsx": "^1.4.0",
+    "@vue/babel-sugar-functional-vue": "^1.4.0",
+    "@vue/babel-sugar-v-model": "^1.4.0",
+    "@vue/babel-sugar-v-on": "^1.4.0",
+    "codemirror": "^5.65.18",
+    "eslint": "^9.17.0",
+    "eslint-plugin-vue": "^9.32.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.2",
+    "vite": "^6.0.6",
+    "vite-plugin-dts": "^4.3.0",
+    "vue": "^2.7.16",
+    "vue-tsc": "^2.2.0"
+  },
+  "peerDependencies": {
+    "vue": "^2.7.0"
+  }
+}
