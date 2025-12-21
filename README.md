@@ -15,16 +15,26 @@ A browser-based Vue 2.7 component editor with live preview. Supports Options API
 - **URL Sharing**: Serialize/deserialize state for URL sharing
 - **Theme Support**: Light and dark themes
 - **Editor Options**: CodeMirror (default) or Monaco editor
+- **Lite Version**: Smaller bundle without JSX support
 
 ## Installation
 
 ```bash
-npm install @anthropic/repl-vue2
+npm install repl-vue2
 # or
-pnpm add @anthropic/repl-vue2
+pnpm add repl-vue2
 ```
 
+## Versions
+
+| Version | Import Path | JSX Support | Use Case |
+|---------|-------------|-------------|----------|
+| Full | `repl-vue2` | ✅ | Need JSX/TSX support |
+| Lite | `repl-vue2/lite` | ❌ | Smaller bundle, template only |
+
 ## Quick Start
+
+### Full Version (with JSX)
 
 ```vue
 <template>
@@ -32,9 +42,31 @@ pnpm add @anthropic/repl-vue2
 </template>
 
 <script>
-import { Repl, useStore } from '@anthropic/repl-vue2'
-import CodeMirrorEditor from '@anthropic/repl-vue2/codemirror-editor'
-import '@anthropic/repl-vue2/style.css'
+import { Repl, useStore } from 'repl-vue2'
+import CodeMirrorEditor from 'repl-vue2/codemirror-editor'
+import 'repl-vue2/style.css'
+
+export default {
+  components: { Repl },
+  setup() {
+    const store = useStore()
+    return { store, CodeMirrorEditor }
+  },
+}
+</script>
+```
+
+### Lite Version (no JSX, smaller bundle)
+
+```vue
+<template>
+  <Repl :editor="CodeMirrorEditor" :store="store" />
+</template>
+
+<script>
+import { Repl, useStore } from 'repl-vue2/lite'
+import CodeMirrorEditor from 'repl-vue2/codemirror-editor'
+import 'repl-vue2/style.css'
 
 export default {
   components: { Repl },
@@ -48,7 +80,7 @@ export default {
 
 ## Required CDN Scripts
 
-The REPL requires Babel to be loaded for TypeScript/JSX compilation:
+The REPL requires Babel to be loaded for TypeScript compilation:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js"></script>
@@ -76,7 +108,9 @@ The REPL requires Babel to be loaded for TypeScript/JSX compilation:
 ## Store API
 
 ```ts
-import { useStore } from '@anthropic/repl-vue2'
+import { useStore } from 'repl-vue2'
+// or for lite version:
+// import { useStore } from 'repl-vue2/lite'
 
 const store = useStore()
 
@@ -106,12 +140,21 @@ store.deserialize(hash)
 For embedding in custom UIs or low-code platforms:
 
 ```ts
+// Full version (with JSX)
 import {
   useStore,
   compileFile,
   compileModulesForPreview,
   PreviewProxy,
-} from '@anthropic/repl-vue2/core'
+} from 'repl-vue2/core'
+
+// Lite version (no JSX)
+import {
+  useStore,
+  compileFile,
+  compileModulesForPreview,
+  PreviewProxy,
+} from 'repl-vue2/core/lite'
 
 // Create store
 const store = useStore()
@@ -122,6 +165,22 @@ const { js, css, errors } = await compileFile(filename, code)
 // Compile all files for preview
 const { modules, mainModule, css } = compileModulesForPreview(store)
 ```
+
+## Feature Comparison
+
+| Feature | Full Version | Lite Version |
+|---------|-------------|--------------|
+| `<template>` | ✅ | ✅ |
+| `<script setup>` | ✅ | ✅ |
+| Options API | ✅ | ✅ |
+| Composition API | ✅ | ✅ |
+| TypeScript | ✅ | ✅ |
+| SCSS/LESS | ✅ | ✅ |
+| Scoped CSS | ✅ | ✅ |
+| Multi-file | ✅ | ✅ |
+| `.jsx` files | ✅ | ❌ |
+| `.tsx` files | ✅ | ❌ |
+| `<script lang="jsx">` | ✅ | ❌ |
 
 ## Development
 
@@ -134,6 +193,15 @@ pnpm dev
 
 # Build library
 pnpm build
+
+# Build preview site
+pnpm build-preview
+
+# Lint
+pnpm lint
+
+# Format
+pnpm format
 ```
 
 ## License
