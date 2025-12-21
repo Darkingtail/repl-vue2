@@ -19,7 +19,7 @@ import {
   safeResolveFilename,
   toError,
 } from './shared'
-import { getVue2JsxPlugins, loadVue2JsxPlugins } from './vue-jsx'
+import { createVue2JsxPreset } from './vue-jsx'
 
 // ============================================================================
 // Style Preprocessor
@@ -94,8 +94,8 @@ function transformTS(
 
   // Add Vue 2 JSX plugins for JSX/TSX files
   if (lang === 'jsx' || lang === 'tsx') {
-    const jsxPlugins = getVue2JsxPlugins()
-    plugins.push(...jsxPlugins)
+    const jsxPreset = createVue2JsxPreset(null, {})
+    plugins.push(...jsxPreset.plugins)
   }
 
   const { basename } = safeResolveFilename(filename)
@@ -105,6 +105,7 @@ function transformTS(
     plugins,
     presets,
   })
+
   return result?.code || ''
 }
 
@@ -122,12 +123,12 @@ function toCommonJS(es: string): string {
 
 /**
  * Extract component names from import statements in script setup
- * Matches: import Comp from './Comp.vue'
+ * Matches: import Comp from './Comp.vue', './Comp.tsx', or './Comp.jsx'
  */
 function extractImportedComponents(scriptContent: string): string[] {
   const components: string[] = []
-  // Match: import ComponentName from './path.vue' or "./path.vue"
-  const importRegex = /import\s+(\w+)\s+from\s+['"][^'"]+\.vue['"]/g
+  // Match: import ComponentName from './path.vue', './path.tsx', or './path.jsx'
+  const importRegex = /import\s+(\w+)\s+from\s+['"][^'"]+\.(vue|tsx|jsx)['"]/g
   let match
   while ((match = importRegex.exec(scriptContent)) !== null) {
     components.push(match[1])
@@ -280,7 +281,6 @@ export async function compileFile(
   const id = hashId(filename)
 
   // Ensure JSX plugins are loaded
-  await loadVue2JsxPlugins()
 
   try {
     // CSS files
@@ -373,3 +373,4 @@ export async function waitForBabel(timeout = 10000): Promise<void> {
     await new Promise<void>((resolve) => setTimeout(resolve, 100))
   }
 }
+

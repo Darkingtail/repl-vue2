@@ -57,13 +57,10 @@ export function compileModulesForPreview(store: ReplStore): CompiledModules {
 }
 
 /**
- * Normalize module name (remove src/ and extension)
+ * Normalize module name (remove src/ prefix, keep extension for uniqueness)
  */
 function normalizeModuleName(filename: string): string {
-  let name = stripSrcPrefix(filename)
-  // Remove extension for imports
-  name = name.replace(/\.(vue|js|ts|jsx|tsx)$/, '')
-  return name
+  return stripSrcPrefix(filename)
 }
 
 /**
@@ -85,14 +82,11 @@ function transformImports(
 
       // Resolve relative path
       const resolved = resolveImportPath(currentFile, importPath, files)
-      console.log(`[ModuleCompiler] Resolving import: ${importPath} from ${currentFile} -> ${resolved}`)
       if (resolved) {
         const moduleName = normalizeModuleName(resolved)
-        console.log(`[ModuleCompiler] Transformed to: require("${moduleName}")`)
         return `require("${moduleName}")`
       }
 
-      console.warn(`[ModuleCompiler] Could not resolve: ${importPath} from ${currentFile}`)
       return match
     }
   )

@@ -7,7 +7,7 @@ A browser-based Vue 2.7 component editor with live preview. Supports Options API
 - **Vue 2.7 Support**: Full support for Vue 2.7 features including Composition API and `<script setup>`
 - **Multiple API Styles**: Options API, Composition API, and `<script setup>`
 - **TypeScript**: Full TypeScript support in `<script lang="ts">`
-- **JSX/TSX**: Vue 2 JSX support with `@vue/babel-preset-jsx`
+- **JSX/TSX**: Vue 2 JSX support with fixed Babel plugin
 - **Style Preprocessors**: SCSS/LESS support (loaded via CDN)
 - **Scoped CSS**: Full scoped styles support
 - **Multiple Files**: Multi-file project support with import resolution
@@ -15,7 +15,6 @@ A browser-based Vue 2.7 component editor with live preview. Supports Options API
 - **URL Sharing**: Serialize/deserialize state for URL sharing
 - **Theme Support**: Light and dark themes
 - **Editor Options**: CodeMirror (default) or Monaco editor
-- **Lite Version**: Smaller bundle without JSX support
 
 ## Installation
 
@@ -25,16 +24,7 @@ npm install repl-vue2
 pnpm add repl-vue2
 ```
 
-## Versions
-
-| Version | Import Path | JSX Support | Use Case |
-|---------|-------------|-------------|----------|
-| Full | `repl-vue2` | ✅ | Need JSX/TSX support |
-| Lite | `repl-vue2/lite` | ❌ | Smaller bundle, template only |
-
 ## Quick Start
-
-### Full Version (with JSX)
 
 ```vue
 <template>
@@ -56,31 +46,9 @@ export default {
 </script>
 ```
 
-### Lite Version (no JSX, smaller bundle)
-
-```vue
-<template>
-  <Repl :editor="CodeMirrorEditor" :store="store" />
-</template>
-
-<script>
-import { Repl, useStore } from 'repl-vue2/lite'
-import CodeMirrorEditor from 'repl-vue2/codemirror-editor'
-import 'repl-vue2/style.css'
-
-export default {
-  components: { Repl },
-  setup() {
-    const store = useStore()
-    return { store, CodeMirrorEditor }
-  },
-}
-</script>
-```
-
 ## Required CDN Scripts
 
-The REPL requires Babel to be loaded for TypeScript compilation:
+The REPL requires Babel to be loaded for TypeScript and JSX compilation:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js"></script>
@@ -109,8 +77,6 @@ The REPL requires Babel to be loaded for TypeScript compilation:
 
 ```ts
 import { useStore } from 'repl-vue2'
-// or for lite version:
-// import { useStore } from 'repl-vue2/lite'
 
 const store = useStore()
 
@@ -140,21 +106,12 @@ store.deserialize(hash)
 For embedding in custom UIs or low-code platforms:
 
 ```ts
-// Full version (with JSX)
 import {
   useStore,
   compileFile,
   compileModulesForPreview,
   PreviewProxy,
 } from 'repl-vue2/core'
-
-// Lite version (no JSX)
-import {
-  useStore,
-  compileFile,
-  compileModulesForPreview,
-  PreviewProxy,
-} from 'repl-vue2/core/lite'
 
 // Create store
 const store = useStore()
@@ -166,21 +123,21 @@ const { js, css, errors } = await compileFile(filename, code)
 const { modules, mainModule, css } = compileModulesForPreview(store)
 ```
 
-## Feature Comparison
+## Supported Features
 
-| Feature | Full Version | Lite Version |
-|---------|-------------|--------------|
-| `<template>` | ✅ | ✅ |
-| `<script setup>` | ✅ | ✅ |
-| Options API | ✅ | ✅ |
-| Composition API | ✅ | ✅ |
-| TypeScript | ✅ | ✅ |
-| SCSS/LESS | ✅ | ✅ |
-| Scoped CSS | ✅ | ✅ |
-| Multi-file | ✅ | ✅ |
-| `.jsx` files | ✅ | ❌ |
-| `.tsx` files | ✅ | ❌ |
-| `<script lang="jsx">` | ✅ | ❌ |
+| Feature | Support |
+|---------|---------|
+| `<template>` | ✅ |
+| `<script setup>` | ✅ |
+| Options API | ✅ |
+| Composition API | ✅ |
+| TypeScript | ✅ |
+| SCSS/LESS | ✅ |
+| Scoped CSS | ✅ |
+| Multi-file | ✅ |
+| `.jsx` files | ✅ |
+| `.tsx` files | ✅ |
+| `<script lang="jsx">` | ✅ |
 
 ## Development
 

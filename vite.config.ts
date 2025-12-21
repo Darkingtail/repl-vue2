@@ -7,6 +7,9 @@ export default defineConfig(({ command, mode }) => {
   const isDev = command === 'serve'
 
   return {
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(mode),
+    },
     plugins: [
       vue2(),
       !isDev &&
