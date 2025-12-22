@@ -1,0 +1,35 @@
+{
+  "name": "umd-transformer",
+  "version": "0.1.0",
+  "description": "Transform compiled Vue 2 components to UMD format for remote loading",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "keywords": [
+    "vue2",
+    "umd",
+    "transformer",
+    "remote-component"
+  ],
+  "license": "MIT"
+}
