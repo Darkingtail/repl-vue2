@@ -15,6 +15,8 @@ A browser-based Vue 2.7 component editor with live preview. Supports Options API
 - **URL Sharing**: Serialize/deserialize state for URL sharing
 - **Theme Support**: Light and dark themes
 - **Editor Options**: CodeMirror (default) or Monaco editor
+- **Remote Components**: Save components to server and load them remotely
+- **File Change Tracking**: Track unsaved changes with visual indicators
 
 ## Installation
 
@@ -77,8 +79,15 @@ The REPL requires Babel to be loaded for TypeScript and JSX compilation:
 
 ```ts
 import { useStore } from 'repl-vue2'
+import { ref } from 'vue'
 
+// Basic usage
 const store = useStore()
+
+// With file change tracking (shows modification indicators)
+const store = useStore({
+  trackFileChanges: ref(true),
+})
 
 // Files
 store.addFile('src/MyComponent.vue')
@@ -99,6 +108,78 @@ store.setImportMap({
 // URL serialization
 const hash = store.serialize()
 store.deserialize(hash)
+
+// File change tracking (when trackFileChanges is enabled)
+store.markAsSaved('src/App.vue')    // Mark single file as saved
+store.markAllAsSaved()              // Mark all files as saved
+store.isModified('src/App.vue')     // Check if file has unsaved changes
+store.getModifiedFiles()            // Get all modified files
+store.clearSavedState()             // Clear all saved state
+```
+
+## Remote Components
+
+The REPL supports saving compiled components to a server and loading them remotely in browser applications.
+
+### UMD Transformer
+
+Convert compiled Vue components to UMD format for browser usage:
+
+```ts
+import { toUMD, extractComponentName } from 'repl-vue2/umd-transformer'
+
+// Convert compiled code to UMD
+const result = toUMD({
+  componentName: 'MyComponent',
+  js: compiledJs,
+  css: compiledCss,
+})
+
+// result.code contains UMD formatted code
+// Load in browser via <script> or AMD loader
+```
+
+### Component Server
+
+A simple server is included for development:
+
+```bash
+cd server
+pnpm install
+pnpm dev
+```
+
+Server API:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/save` | POST | Save component (source + compiled) |
+| `/api/components` | GET | List available components |
+| `/api/source/:name` | GET | Get component source code |
+| `/api/sources` | GET | Get multiple component sources |
+| `/components/:domain/:name/:file` | GET | Serve compiled UMD files |
+
+### Loading Remote Components
+
+```js
+// AMD loader simulation
+window.define = function(deps, factory) {
+  window.__amdResult__ = factory()
+}
+window.define.amd = true
+
+// Load component
+const script = document.createElement('script')
+script.src = 'http://localhost:3456/components/default/MyComponent/MyComponent.umd.min.js'
+script.onload = () => {
+  const component = window.__amdResult__
+  // Use with Vue
+  new Vue({
+    el: '#app',
+    render: h => h(component)
+  })
+}
+document.head.appendChild(script)
 ```
 
 ## Headless Mode (Core Only)
@@ -123,6 +204,21 @@ const { js, css, errors } = await compileFile(filename, code)
 const { modules, mainModule, css } = compileModulesForPreview(store)
 ```
 
+## Compilation Output Format
+
+The REPL compiles `.vue` files to **CommonJS** format:
+
+```js
+// Compiled output example
+const { ref } = require('vue')
+module.exports = {
+  setup() { ... }
+}
+```
+
+- **REPL iframe preview**: Uses a module system simulator to handle `require()`
+- **Browser direct usage**: Requires UMD transformation (see UMD Transformer above)
+
 ## Supported Features
 
 | Feature | Support |
@@ -138,6 +234,8 @@ const { modules, mainModule, css } = compileModulesForPreview(store)
 | `.jsx` files | ✅ |
 | `.tsx` files | ✅ |
 | `<script lang="jsx">` | ✅ |
+| Remote Components | ✅ |
+| File Change Tracking | ✅ |
 
 ## Development
 
@@ -145,8 +243,14 @@ const { modules, mainModule, css } = compileModulesForPreview(store)
 # Install dependencies
 pnpm install
 
-# Start dev server
+# Start dev server (playground)
 pnpm dev
+
+# Start remote dev server
+pnpm dev:remote
+
+# Start component server
+cd server && pnpm dev
 
 # Build library
 pnpm build
@@ -159,6 +263,23 @@ pnpm lint
 
 # Format
 pnpm format
+```
+
+## Project Structure
+
+```
+repl-vue2/
+├── src/                    # Core REPL source
+│   ├── components/         # Vue components (Repl, Editor, Output, etc.)
+│   ├── editor/            # Editor implementations (CodeMirror, Monaco)
+│   ├── output/            # Preview and module compilation
+│   ├── compiler.ts        # SFC compiler
+│   └── store.ts           # State management
+├── packages/
+│   └── umd-transformer/   # UMD format converter
+├── server/                # Component server
+├── test/                  # Playground demo
+└── test-remote/           # Remote component demo
 ```
 
 ## License

@@ -6,7 +6,7 @@
         <button @click="toggleTheme">
           {{ theme === 'dark' ? '🌙 Dark' : '☀️ Light' }}
         </button>
-        <button @click="shareUrl">📤 Share</button>
+        <button @click="shareUrl">Share</button>
       </div>
     </header>
     <div class="demo-content">
@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue'
+import { defineComponent, ref, onMounted, watch } from 'vue'
 import { Repl, useStore } from '../src'
 import CodeMirrorEditor from '../src/editor/codemirror/CodeMirrorEditor.vue'
 
@@ -53,8 +53,11 @@ export default defineComponent({
       })
     }
 
-    // Watch for hash changes
+    // Watch for hash changes (from external sources like browser back/forward)
     onMounted(() => {
+      // Trigger recompilation after Repl component is mounted
+      store.init()
+
       window.addEventListener('hashchange', () => {
         const hash = location.hash.slice(1)
         if (hash) {
@@ -62,6 +65,20 @@ export default defineComponent({
         }
       })
     })
+
+    // Auto-save to URL hash when files change (like Vue 3 playground)
+    // Use deep watch to detect all file content changes
+    watch(
+      () => store.files,
+      () => {
+        // Debounce to avoid too frequent updates
+        const newHash = store.serialize()
+        if (location.hash !== newHash) {
+          history.replaceState(null, '', newHash)
+        }
+      },
+      { deep: true }
+    )
 
     return {
       theme,
