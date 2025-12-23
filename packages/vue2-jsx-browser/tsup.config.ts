@@ -1,5 +1,9 @@
 import { copyFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'tsup';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   clean: true,
@@ -11,6 +15,10 @@ export default defineConfig({
 esbuildOptions(options) {
     options.define = {
       'process.env.NODE_ENV': '"production"',
+    };
+    // Alias Node.js assert to browser-compatible shim
+    options.alias = {
+      assert: resolve(__dirname, 'src/assert-shim.ts'),
     };
   },
   

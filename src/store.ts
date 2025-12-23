@@ -97,6 +97,9 @@ export type StoreState = ToRefs<{
   outputMode: OutputModes
 
   loading: boolean
+
+  // Enable tracking of file modifications (for remote save feature)
+  trackFileChanges: boolean
 }>
 
 export interface ReplStore extends UnwrapRef<StoreState> {
@@ -113,6 +116,12 @@ export interface ReplStore extends UnwrapRef<StoreState> {
   getFiles(): Record<string, string>
   setFiles(newFiles: Record<string, string>, mainFile?: string): Promise<void>
   compileFile(file: File): Promise<(string | Error)[]>
+  // Track saved state for remote feature
+  markAsSaved(filename: string): void
+  markAllAsSaved(): void
+  isModified(filename: string): boolean
+  getModifiedFiles(): File[]
+  clearSavedState(): void
 }
 
 export type Store = Pick<
@@ -151,6 +160,8 @@ export function useStore(
     showOutput = ref(false),
     outputMode = ref('preview'),
     loading = ref(false),
+
+    trackFileChanges = ref(false),
   }: Partial<StoreState> = {},
   serializedState?: string
 ): ReplStore {
@@ -158,8 +169,11 @@ export function useStore(
   // Compile a single file
   async function doCompileFile(file: File): Promise<(string | Error)[]> {
     const { js, css, errors: compileErrors } = await compileFile(file.filename, file.code)
+    // Directly assign to trigger reactivity
     file.compiled.js = js
     file.compiled.css = css
+    // Increment version to force reactivity update
+    codeVersion.value++
     return compileErrors
   }
 
@@ -172,22 +186,20 @@ export function useStore(
   const codeVersion = ref(0)
 
   function init() {
-    // Use watchEffect to auto-track dependencies
-    // Access file.code to create reactive dependency
-    watchEffect(() => {
-      const file = activeFile.value
-      if (file) {
-        // Access code to track it as dependency
-        const code = file.code
-        const filename = file.filename
-        // Trigger compilation
-        if (code !== undefined) {
+    // Watch activeFilename and the code of that file
+    // Use separate watches to avoid circular dependency with codeVersion
+    watch(
+      [activeFilename, () => files.value[activeFilename.value]?.code],
+      ([filename, code]) => {
+        const file = files.value[filename]
+        if (file && code !== undefined) {
           doCompileFile(file).then((errs) => {
             errors.value = errs
           })
         }
-      }
-    })
+      },
+      { immediate: true }
+    )
 
     // Init import map file if not exists
     if (!files.value[importMapFile]) {
@@ -197,10 +209,10 @@ export function useStore(
       ))
     }
 
-    // Compile all other files
+    // Compile all files (including mainFile)
     errors.value = []
     for (const [filename, file] of Object.entries(files.value)) {
-      if (filename !== mainFile.value && filename !== importMapFile) {
+      if (filename !== importMapFile) {
         doCompileFile(file).then((errs) => errors.value.push(...errs))
       }
     }
@@ -395,9 +407,61 @@ export function useStore(
   }
 
   activeFilename ||= ref(mainFile.value)
-  const activeFile = computed(() => files.value[activeFilename.value])
+  // Include codeVersion dependency to force recompute when compilation finishes
+  const activeFile = computed(() => {
+    // Touch codeVersion to create dependency
+    const _ = codeVersion.value
+    return files.value[activeFilename.value]
+  })
 
   applyBuiltinImportMap()
+
+  // Track saved state for remote feature
+  // Stores the code content at the time of last save
+  const savedCodes = ref<Record<string, string>>({})
+
+  function markAsSaved(filename: string) {
+    const file = files.value[filename]
+    if (file) {
+      // Use Vue 2's set() for reactivity
+      set(savedCodes.value, filename, file.code)
+    }
+  }
+
+  function markAllAsSaved() {
+    // Replace entire object to ensure reactivity
+    const newSavedCodes: Record<string, string> = {}
+    for (const [filename, file] of Object.entries(files.value)) {
+      if (filename !== importMapFile) {
+        newSavedCodes[filename] = file.code
+      }
+    }
+    savedCodes.value = newSavedCodes
+  }
+
+  function isModified(filename: string): boolean {
+    // If tracking is disabled, always return false
+    if (!trackFileChanges.value) return false
+    const file = files.value[filename]
+    if (!file) return false
+    // If file not in savedCodes, it's a new file (modified)
+    if (!(filename in savedCodes.value)) return true
+    return file.code !== savedCodes.value[filename]
+  }
+
+  function getModifiedFiles(): File[] {
+    const modified: File[] = []
+    for (const [filename, file] of Object.entries(files.value)) {
+      if (filename !== importMapFile && isModified(filename)) {
+        modified.push(file)
+      }
+    }
+    return modified
+  }
+
+  function clearSavedState() {
+    savedCodes.value = {}
+  }
 
   const store: ReplStore = reactive({
     files,
@@ -412,6 +476,8 @@ export function useStore(
     outputMode,
     loading,
 
+    trackFileChanges,
+
     init,
     setActive,
     addFile,
@@ -424,6 +490,11 @@ export function useStore(
     getFiles,
     setFiles,
     compileFile: doCompileFile,
+    markAsSaved,
+    markAllAsSaved,
+    isModified,
+    getModifiedFiles,
+    clearSavedState,
   })
 
   return store

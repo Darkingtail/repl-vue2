@@ -107,29 +107,23 @@ export default defineComponent({
       try {
         // Skip if there are compile errors
         if (store.errors.length > 0) {
-          console.log('[Preview] Skipping due to errors:', store.errors)
           return
         }
 
         // Check that main file exists and is compiled
         const mainFile = store.files[store.mainFile]
         if (!mainFile || !mainFile.compiled.js) {
-          console.log('[Preview] Main file not ready:', store.mainFile, mainFile?.compiled?.js?.length)
           return
         }
 
         // Access all files' compiled output to create reactive dependencies
-        const allFilesCompiled = Object.entries(store.files).map(([name, file]) => ({
-          name,
-          hasJs: !!file.compiled?.js,
-          hasCss: !!file.compiled?.css
-        }))
-        console.log('[Preview] Files status:', allFilesCompiled)
+        Object.values(store.files).forEach(file => {
+          // Touch compiled to track as dependency
+          const _ = file.compiled?.js
+          const __ = file.compiled?.css
+        })
 
         const { modules, mainModule, css } = compileModulesForPreview(store)
-
-        console.log('[Preview] Modules:', Object.keys(modules))
-        console.log('[Preview] Main module:', mainModule)
 
         // Send to iframe
         proxy.eval({
@@ -138,7 +132,6 @@ export default defineComponent({
           css,
         })
       } catch (err) {
-        console.error('[Preview] Update failed:', err)
         runtimeError.value = err instanceof Error ? err.message : String(err)
       }
     }

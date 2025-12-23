@@ -9,10 +9,11 @@
       <div
         v-if="pending !== file"
         class="file"
-        :class="{ active: activeFilename === file }"
+        :class="{ active: activeFilename === file, modified: fileIsModified(file) }"
         @click="$emit('select', file)"
         @dblclick="i > 0 && !isImportMap(file) && editFileName(file)"
       >
+        <span class="modified-dot" v-if="fileIsModified(file)"></span>
         <span class="label">{{ stripPrefix(file) }}</span>
         <span
           v-if="i > 0 && !isImportMap(file)"
@@ -56,8 +57,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref, type PropType, type Directive } from 'vue'
-import type { File } from '../../store'
+import { defineComponent, computed, ref, inject, type PropType, type Directive } from 'vue'
+import type { File, ReplStore } from '../../store'
 import { stripSrcPrefix } from '../../utils'
 
 // Custom directive for auto-focus (Vue 2 equivalent of @vue:mounted)
@@ -95,6 +96,7 @@ export default defineComponent({
   },
   emits: ['select', 'delete', 'add', 'rename'],
   setup(props, { emit }) {
+    const store = inject<ReplStore>('store')!
     const fileSelector = ref<HTMLElement | null>(null)
 
     /**
@@ -103,6 +105,11 @@ export default defineComponent({
      */
     const pending = ref<boolean | string>(false)
     const pendingFilename = ref('Comp.vue')
+
+    // Check if file is modified (has unsaved changes)
+    function fileIsModified(filename: string): boolean {
+      return store.isModified(filename)
+    }
 
     // Sort files: main file first, import-map excluded (shown separately), others alphabetically
     const sortedFiles = computed(() => {
@@ -208,6 +215,7 @@ export default defineComponent({
       pendingFilename,
       stripPrefix,
       isImportMap,
+      fileIsModified,
       startAddFile,
       cancelNameFile,
       doneNameFile,
@@ -271,6 +279,17 @@ export default defineComponent({
   display: inline-block;
   padding: 8px 10px 6px;
   line-height: 20px;
+}
+
+.file .modified-dot {
+  position: absolute;
+  top: 6px;
+  left: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-branding);
+  padding: 0;
 }
 
 .file.pending span {
