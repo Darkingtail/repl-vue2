@@ -4,3 +4,9 @@ dist-preview
 .DS_Store
 *.local
 *.log
+
+# Environment variables (contains API keys)
+.env
+.env.local
+.env.*.local
+server-d2c/.env

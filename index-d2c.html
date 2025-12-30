@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue 2 REPL - D2C (Design to Code)</title>
+  <style>
+    html, body, #app {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+  </style>
+  <!-- Babel standalone for TypeScript/JSX compilation -->
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.26.5/babel.min.js"></script>
+  <!-- SCSS support -->
+  <script src="https://cdn.jsdelivr.net/npm/sass.js@0.11.1/dist/sass.sync.js"></script>
+  <!-- LESS support -->
+  <script src="https://cdn.jsdelivr.net/npm/less@4.2.0/dist/less.min.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/test-d2c/main.ts"></script>
+</body>
+</html>

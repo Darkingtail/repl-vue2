@@ -236,6 +236,93 @@ module.exports = {
 | `<script lang="jsx">` | ✅ |
 | Remote Components | ✅ |
 | File Change Tracking | ✅ |
+| D2C (Design to Code) | ✅ |
+
+## D2C (Design to Code)
+
+Convert design images or MasterGo links to Vue 2 code using AI.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Internal Network                      │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              D2C Proxy Server (Node.js)              │   │
+│  │                                                     │   │
+│  │  POST /api/mastergo/dsl      → MasterGo API         │   │
+│  │  POST /api/generate          → OpenRouter API       │   │
+│  │  POST /api/mastergo/generate → MasterGo + AI        │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                            ▲                                │
+│                            │                                │
+│  ┌─────────────────────────┴───────────────────────────┐   │
+│  │                    D2C REPL Page                     │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Setup D2C Server
+
+```bash
+cd server-d2c
+pnpm install
+
+# Create .env file from template
+cp .env.example .env
+
+# Edit .env with your configuration
+pnpm dev
+```
+
+### AI Configuration
+
+The D2C server supports any OpenAI-compatible API. Configure in `.env`:
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `MG_MCP_TOKEN` | Yes | - | MasterGo API token |
+| `AI_API_KEY` | Yes | - | AI API key |
+| `AI_API_BASE_URL` | No | `https://openrouter.ai` | API base URL (protocol + domain only) |
+| `AI_API_PATH` | No | `/api/v1` | API path |
+| `AI_MODEL` | No | `anthropic/claude-sonnet-4` | Model to use |
+
+**Examples:**
+
+```bash
+# OpenRouter (default)
+AI_API_KEY=your_openrouter_key
+AI_API_BASE_URL=https://openrouter.ai
+AI_MODEL=anthropic/claude-sonnet-4
+
+# OpenAI
+AI_API_KEY=sk-xxx
+AI_API_BASE_URL=https://api.openai.com
+AI_MODEL=gpt-4o
+
+# Private deployment
+AI_API_KEY=your_key
+AI_API_BASE_URL=http://172.16.4.199
+AI_API_PATH=/ai/v1
+AI_MODEL=your-model
+```
+
+### Usage
+
+1. Start D2C proxy server: `cd server-d2c && pnpm dev`
+2. Start D2C page: `pnpm dev:d2c`
+3. Input:
+   - **Image**: Drag/paste/upload design screenshot
+   - **MasterGo**: Paste MasterGo link with `node_id`
+4. Click "Generate Vue 2 Code"
+5. Code appears in REPL editor with live preview
+
+### Supported Input
+
+| Input | Description |
+|-------|-------------|
+| Image (drag/paste/upload) | AI analyzes screenshot and generates code |
+| MasterGo Link | Fetches DSL from MasterGo API, AI generates code |
 
 ## Development
 
@@ -249,8 +336,14 @@ pnpm dev
 # Start remote dev server
 pnpm dev:remote
 
-# Start component server
+# Start D2C dev server
+pnpm dev:d2c
+
+# Start component server (for remote)
 cd server && pnpm dev
+
+# Start D2C proxy server
+cd server-d2c && pnpm dev
 
 # Build library
 pnpm build
@@ -277,9 +370,11 @@ repl-vue2/
 │   └── store.ts           # State management
 ├── packages/
 │   └── umd-transformer/   # UMD format converter
-├── server/                # Component server
+├── server/                # Component server (for remote)
+├── server-d2c/            # D2C proxy server (MasterGo + AI)
 ├── test/                  # Playground demo
-└── test-remote/           # Remote component demo
+├── test-remote/           # Remote component demo
+└── test-d2c/              # D2C demo
 ```
 
 ## License

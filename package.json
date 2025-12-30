@@ -31,6 +31,8 @@
   ],
   "scripts": {
     "dev": "vite",
+    "dev:remote": "vite --open /index-remote.html",
+    "dev:d2c": "vite --open /index-d2c.html",
     "build": "vite build",
     "build-preview": "vite build -c vite.preview.config.ts",
     "preview": "vite preview",

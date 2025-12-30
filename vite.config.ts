@@ -36,6 +36,7 @@ export default defineConfig(({ command, mode }) => {
           input: {
             main: resolve(__dirname, 'index.html'),
             'index-remote': resolve(__dirname, 'index-remote.html'),
+            'index-d2c': resolve(__dirname, 'index-d2c.html'),
           },
         },
       }
