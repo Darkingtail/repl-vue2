@@ -12,13 +12,15 @@ export default defineConfig({
     index: 'src/index.ts',
   },
   // Shim Node.js built-ins for browser
-esbuildOptions(options) {
+  esbuildOptions(options) {
     options.define = {
       'process.env.NODE_ENV': '"production"',
     };
-    // Alias Node.js assert to browser-compatible shim
+    // Alias Node.js assert to browser-compatible CommonJS shim
+    // Using .cjs ensures require('assert') returns the function directly
+    // Works in both CJS (webpack) and ESM (Vite) consumption
     options.alias = {
-      assert: resolve(__dirname, 'src/assert-shim.ts'),
+      assert: resolve(__dirname, 'src/assert-shim.cjs'),
     };
   },
   
