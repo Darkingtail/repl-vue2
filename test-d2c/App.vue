@@ -89,13 +89,33 @@
                 </div>
               </div>
 
+              <!-- Component Library -->
+              <div class="form-group">
+                <label>Component Library</label>
+                <select v-model="componentLibrary">
+                  <option value="none">原生 HTML</option>
+                  <option value="element-ui">Element UI</option>
+                  <option value="custom">自定义</option>
+                </select>
+              </div>
+
+              <!-- Custom Library Prompt (when custom is selected) -->
+              <div v-if="componentLibrary === 'custom'" class="form-group">
+                <label>Custom Library Prompt</label>
+                <textarea
+                  v-model="customLibraryPrompt"
+                  placeholder="描述你要使用的组件库，例如：&#10;优先使用 Vant 组件库，van-button, van-field, van-cell..."
+                  rows="4"
+                ></textarea>
+              </div>
+
               <!-- Additional Prompt -->
               <div class="form-group">
                 <label>Additional Instructions (Optional)</label>
                 <textarea
                   v-model="additionalPrompt"
-                  placeholder="e.g., Use Element UI components, Add hover effects..."
-                  rows="3"
+                  placeholder="e.g., Add hover effects, Use flex layout..."
+                  rows="2"
                 ></textarea>
               </div>
 
@@ -125,6 +145,7 @@
               :theme="theme"
               :show-compile-output="true"
               :show-import-map="false"
+              :preview-options="previewOptions"
               layout="vertical"
             />
           </div>
@@ -135,7 +156,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue'
+import { defineComponent, ref, computed, onMounted } from 'vue'
 import SplitPane from '../src/components/SplitPane.vue'
 import { Repl, useStore } from '../src'
 import CodeMirrorEditor from '../src/editor/codemirror/CodeMirrorEditor.vue'
@@ -154,9 +175,25 @@ export default defineComponent({
   setup() {
     const theme = ref<'light' | 'dark'>('light')
     const serverUrl = ref('http://localhost:3001')
+
     const inputMode = ref<'image' | 'mastergo'>('image')
     const mastergoLink = ref('')
+    const componentLibrary = ref('element-ui')
+    const customLibraryPrompt = ref('')
     const additionalPrompt = ref('')
+
+    // Dynamic preview options based on component library selection
+    const previewOptions = computed(() => {
+      if (componentLibrary.value === 'element-ui') {
+        return {
+          headHTML: `
+            <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.14/lib/theme-chalk/index.css">
+            <script src="https://unpkg.com/element-ui@2.15.14/lib/index.js"><\/script>
+          `,
+        }
+      }
+      return {}
+    })
     const imageData = ref<string | null>(null)
     const imagePreview = ref<string | null>(null)
     const isDragging = ref(false)
@@ -274,14 +311,20 @@ export default defineComponent({
       try {
         let response
 
+        const requestBody = {
+          prompt: additionalPrompt.value,
+          componentLibrary: componentLibrary.value,
+          customLibraryPrompt: componentLibrary.value === 'custom' ? customLibraryPrompt.value : undefined,
+        }
+
         if (inputMode.value === 'image') {
           // Image to code
           response = await fetch(`${serverUrl.value}/api/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+              ...requestBody,
               image: imageData.value,
-              prompt: additionalPrompt.value,
             }),
           })
         } else {
@@ -290,8 +333,8 @@ export default defineComponent({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+              ...requestBody,
               link: mastergoLink.value,
-              prompt: additionalPrompt.value,
             }),
           })
         }
@@ -324,6 +367,8 @@ export default defineComponent({
       serverUrl,
       inputMode,
       mastergoLink,
+      componentLibrary,
+      customLibraryPrompt,
       additionalPrompt,
       imageData,
       imagePreview,
@@ -333,6 +378,7 @@ export default defineComponent({
       status,
       fileInput,
       store,
+      previewOptions,
       CodeMirrorEditor,
       toggleTheme,
       checkServer,
@@ -440,7 +486,8 @@ export default defineComponent({
 }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.form-group select {
   width: 100%;
   padding: 8px 10px;
   border: 1px solid var(--border);
@@ -451,8 +498,13 @@ export default defineComponent({
   box-sizing: border-box;
 }
 
+.form-group select {
+  cursor: pointer;
+}
+
 .form-group input:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.form-group select:focus {
   outline: none;
   border-color: var(--color-branding);
 }

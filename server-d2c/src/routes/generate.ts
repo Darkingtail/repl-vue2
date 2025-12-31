@@ -1,8 +1,20 @@
 import { Router } from 'express'
 import { generateFromImage, generateFromDsl } from '../services/ai'
 import { isAIConfigured } from '../config'
+import { getLibraryOptions } from '../config/component-libraries'
 
 const router = Router()
+
+/**
+ * GET /api/libraries
+ * Get available component library options
+ */
+router.get('/libraries', (_req, res) => {
+  res.json({
+    success: true,
+    libraries: getLibraryOptions()
+  })
+})
 
 /**
  * POST /api/generate
@@ -10,7 +22,7 @@ const router = Router()
  */
 router.post('/generate', async (req, res) => {
   try {
-    const { image, dsl, prompt } = req.body
+    const { image, dsl, prompt, componentLibrary, customLibraryPrompt } = req.body
 
     if (!isAIConfigured()) {
       return res.status(500).json({ error: 'AI API key not configured (set AI_API_KEY in .env)' })
@@ -20,14 +32,15 @@ router.post('/generate', async (req, res) => {
       return res.status(400).json({ error: 'Either image or dsl is required' })
     }
 
+    const options = { prompt, componentLibrary, customLibraryPrompt }
     let result
 
     if (image) {
       // Generate from image
-      result = await generateFromImage(image, prompt)
+      result = await generateFromImage(image, options)
     } else {
       // Generate from DSL
-      result = await generateFromDsl(dsl, prompt)
+      result = await generateFromDsl(dsl, options)
     }
 
     res.json({

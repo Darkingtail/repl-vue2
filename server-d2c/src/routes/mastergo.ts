@@ -45,7 +45,7 @@ router.post('/mastergo/dsl', async (req, res) => {
  */
 router.post('/mastergo/generate', async (req, res) => {
   try {
-    const { link, prompt } = req.body
+    const { link, prompt, componentLibrary, customLibraryPrompt } = req.body
 
     if (!isMasterGoConfigured()) {
       return res.status(500).json({ error: 'MasterGo token not configured' })
@@ -64,7 +64,8 @@ router.post('/mastergo/generate', async (req, res) => {
 
     // Step 2: Generate code with AI
     console.log(`[D2C] Step 2/2: Generating code...`)
-    const result = await generateFromDsl(dsl, prompt)
+    const options = { prompt, componentLibrary, customLibraryPrompt }
+    const result = await generateFromDsl(dsl, options)
     console.log(`[D2C] Complete! Generated ${result.code.length} chars`)
 
     res.json({
