@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue 2.7 REPL Demo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    #app {
+      height: 100%;
+    }
+    .demo-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: #35495e;
+      color: white;
+    }
+    .demo-header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    .demo-header button {
+      padding: 6px 12px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 4px;
+      background: transparent;
+      color: white;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .demo-header button:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .demo-content {
+      height: calc(100% - 50px);
+    }
+  </style>
+  <!-- Load Babel for TypeScript/JSX compilation -->
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.26.5/babel.min.js"></script>
+  <!-- Load Sass.js for SCSS/SASS support -->
+  <script src="https://cdn.jsdelivr.net/npm/sass.js@0.11.1/dist/sass.sync.js"></script>
+  <!-- Load Less.js for LESS support -->
+  <script src="https://cdn.jsdelivr.net/npm/less@4.2.0/dist/less.min.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/test/main.ts"></script>
+</body>
+</html>
