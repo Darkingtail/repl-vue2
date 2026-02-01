@@ -1,6 +1,6 @@
 # Vue 2.7 REPL
 
-[English](./README.md) | [GitHub](https://github.com/Darkingtail/repl-vue2)
+[English](./README.md) | [GitHub](https://github.com/Darkingtail/repl-vue2) | [在线演示](https://repl-vue2.vercel.app/)
 
 基于浏览器的 Vue 2.7 组件编辑器，支持实时预览。支持 Options API、Composition API、`<script setup>`、TypeScript 和 JSX。
 
