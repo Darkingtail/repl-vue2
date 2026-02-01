@@ -1,6 +1,6 @@
 # Vue 2.7 REPL
 
-[中文文档](./README.zh-CN.md)
+[中文文档](./README.zh-CN.md) | [GitHub](https://github.com/Darkingtail/repl-vue2)
 
 A browser-based Vue 2.7 component editor with live preview. Supports Options API, Composition API, `<script setup>`, TypeScript, and JSX.
 
